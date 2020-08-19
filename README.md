@@ -1,2 +1,2 @@
 # MeuTrecoNaInternet
- Este é o repositório utilizado para realizar o trabalho MeuTrecoNaInternet
+ Este é o repositório utilizado no trabalho MeuTrecoNaInternet
