@@ -36,4 +36,5 @@ void loop() {
   Serial.print(t);
   Serial.print(F("°C "));
   Serial.println();
+  //bom dia
 }
