@@ -27,6 +27,7 @@ PubSubClient MQTT(espClient);                         //Definindo o cliente como
 const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 0;
 const int   daylightOffset_sec = -3600*3;
+struct tm timeinfo;
 
 //Funções
 void reconectWiFi(); 
@@ -52,6 +53,12 @@ void setup() {
 
     //configuração para pegar hora
     configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+
+    
+    if(!getLocalTime(&timeinfo)){
+    Serial.println("Failed to obtain time");
+    return;
+  }
 }
 
 //Função: reconecta-se ao broker MQTT (caso ainda não esteja conectado ou em caso de a conexão cair)
@@ -116,6 +123,12 @@ void VerificaConexoesWiFIEMQTT(void)
      reconectWiFi(); //se não há conexão com o WiFI, a conexão é refeita
 }
 
+void printLocalTime()
+ {
+  
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+}
+
 //Função: envia ao Broker o estado atual do output 
 //Parâmetros: nenhum
 //Retorno: nenhum
@@ -125,28 +138,19 @@ void EnviaEstadoOutputMQTT(void)
     sprintf(mensagem,"Dado %d\n\r", cont);
     MQTT.publish(TOPICO_PUBLISH, mensagem);
  
-    //printLocalTime();
+    printLocalTime();
     Serial.println("Fim do envio de mensagem.");
-    delay(10000);
 }
 
-//void printLocalTime()
-// {
-//  struct tm timeinfo;
-//  if(!getLocalTime(&timeinfo)){
-//    Serial.println("Failed to obtain time");
-//    return;
-//  }
-//  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-//}
-
 void loop() {
-  //garante funcionamento das conexões WiFi e ao broker MQTT
-  VerificaConexoesWiFIEMQTT();
+  
+  VerificaConexoesWiFIEMQTT(); //garante funcionamento das conexões WiFi e ao broker MQTT
 
-  //envia o status de todos os outputs para o Broker no protocolo esperado
-  EnviaEstadoOutputMQTT();
- 
-  //keep-alive da comunicação com broker MQTT
-  MQTT.loop();
+  if(timeinfo.tm_min == 20) 
+  {
+      EnviaEstadoOutputMQTT(); //envia o status de todos os outputs para o Broker no protocolo esperado
+      delay(60000);
+  }
+  
+  MQTT.loop(); //keep-alive da comunicação com broker MQTT
 }
