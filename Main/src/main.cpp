@@ -12,6 +12,10 @@
 #define TOPICO_PUBLISH_CHUVA   "IoTro/Guilherme/Casa_1/Chuva"     //Tópico de envio dos dados de chuva                                              
 #define ID_MQTT  "IoTro_Guilherme_4411:esp32_1"                   //id mqtt: nome dado ao dispositivo
 
+#define DHTPIN 0                //Definindo o pino de dados conectado ao sensor DHT
+#define DHTTYPE DHT11           //Definindo o tipo de sensor DHT (no meu caso, 11)
+DHT dht(DHTPIN, DHTTYPE);       //A definição de pino e tipo de sensor é utilizada na biblioteca para definição de funções
+
 //variaveis
 // WIFI
 const char* SSID = "Net-Virtua-8328";                 //Rede wifi de Conexão
@@ -35,6 +39,7 @@ WiFiClient espClient;                                 //Definindo o cliente como
 PubSubClient MQTT(espClient);                         //Definindo o cliente como esp: MQTT
 
 //Funções
+void dados_temp_umid();
 void ConnectWiFi(); 
 void mqtt_callback(char* topic, byte* payload, unsigned int length);
 void VerificaConexoesWiFIEMQTT(void);
@@ -62,12 +67,35 @@ void setup() {
     MQTT.setServer(BROKER_MQTT, BROKER_PORT);   //Conectando no broker
     MQTT.setCallback(mqtt_callback);            //Função para quando se recebe algo
 
-    
+    dht.begin();                                //Habilitando o sensor de temperatura e umidade
+
     configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);       //Configurando o tempo pra Brasil (GMT-3:00)
     if(!getLocalTime(&timeinfo)){
     Serial.println("Failed to obtain time");
     return;
   }
+}
+
+/*
+* Função utilizada para realizar a leitura do sensor DHT11
+* de umidade e temperatura, retornando essas informações.
+*/
+void dados_temp_umid()
+{
+    float t = dht.readTemperature();                    //Função para medida de temperatura
+    float h = dht.readHumidity();                       //Função para medida de umidade
+    char msg_t[10];
+    char msg_h[10];
+    
+    if (isnan(h) || isnan(t))                           //Verifica se os dados foram lidos
+    {                                                   //Caso não tenham sido lidos, envia "200"
+        t = 200;                                        //para o broker que irá compreender que não
+        h = 200;                                        //ocorreu a leitura correta.
+    }
+    sprintf(msg_t, "%.2f", t);
+    sprintf(msg_h, "%.2f", h);
+    MQTT.publish(TOPICO_PUBLISH_DHTT, msg_t);       //Envia para o tópico o dado temperatura
+    MQTT.publish(TOPICO_PUBLISH_DHTU, msg_h);       //Envia para o tópico o dado umidade
 }
 
 /*
@@ -160,11 +188,8 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length)
 */
 void mqtt_data(void)
 {
-    delay(10000);
     cont++;
-    sprintf(mensagem,"Dado %d\n\r", cont);
-    MQTT.publish(TOPICO_PUBLISH_DHTT, mensagem);
- 
+    dados_temp_umid();
     //printLocalTime();
     Serial.println("Fim do envio de mensagem.");
     msg = ""; 
