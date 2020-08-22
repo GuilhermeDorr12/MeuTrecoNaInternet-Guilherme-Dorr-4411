@@ -14,7 +14,9 @@
 
 #define DHTPIN 0                //Definindo o pino de dados conectado ao sensor DHT
 #define DHTTYPE DHT11           //Definindo o tipo de sensor DHT (no meu caso, 11)
-DHT dht(DHTPIN, DHTTYPE);       //A definição de pino e tipo de sensor é utilizada na biblioteca para definição de funções
+
+#define PinoLDR 34              //Definindo o pino de dados conectado ao LDR
+#define PinoCHUVA 35            //Definindo o pino de dados conectado ao sensor de chuva  
 
 //variaveis
 // WIFI
@@ -37,9 +39,12 @@ struct tm timeinfo;
 //Definindo os 'clientes'
 WiFiClient espClient;                                 //Definindo o cliente como esp: Wifi
 PubSubClient MQTT(espClient);                         //Definindo o cliente como esp: MQTT
+DHT dht(DHTPIN, DHTTYPE);                             //Definindo o cliente como DHT11 e pino 04
 
 //Funções
 void dados_temp_umid();
+void dados_ldr();
+void dados_chuva();
 void ConnectWiFi(); 
 void mqtt_callback(char* topic, byte* payload, unsigned int length);
 void VerificaConexoesWiFIEMQTT(void);
@@ -96,6 +101,30 @@ void dados_temp_umid()
     sprintf(msg_h, "%.2f", h);
     MQTT.publish(TOPICO_PUBLISH_DHTT, msg_t);       //Envia para o tópico o dado temperatura
     MQTT.publish(TOPICO_PUBLISH_DHTU, msg_h);       //Envia para o tópico o dado umidade
+}
+
+/*
+* Função utilizada para leitura do sensor LDR, através de conversão ADC
+*/
+void dados_ldr()
+{
+    int luz = analogRead(PinoLDR);                  //Leitura do sensor LDR
+    char msg_l[10];
+
+    sprintf(msg_l, "%i", luz);
+    MQTT.publish(TOPICO_PUBLISH_LDR, msg_l);        //Envia para o tópico o dado luz
+}
+
+/*
+* Função utilizada para leitura do sensor de chuva, através de conversão ADC
+*/
+void dados_chuva()
+{
+    int chuva = analogRead(PinoCHUVA);                  //Leitura do sensor LDR
+    char msg_c[10];
+
+    sprintf(msg_c, "%i", chuva);
+    MQTT.publish(TOPICO_PUBLISH_CHUVA, msg_c);        //Envia para o tópico o dado luz
 }
 
 /*
@@ -190,6 +219,8 @@ void mqtt_data(void)
 {
     cont++;
     dados_temp_umid();
+    dados_ldr();
+    dados_chuva();
     //printLocalTime();
     Serial.println("Fim do envio de mensagem.");
     msg = ""; 
