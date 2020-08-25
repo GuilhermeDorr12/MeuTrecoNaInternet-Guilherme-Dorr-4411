@@ -15,8 +15,10 @@
 #define DHTPIN 0                //Definindo o pino de dados conectado ao sensor DHT
 #define DHTTYPE DHT11           //Definindo o tipo de sensor DHT (no meu caso, 11)
 
-#define PinoLDR 34              //Definindo o pino de dados conectado ao LDR
-#define PinoCHUVA 35            //Definindo o pino de dados conectado ao sensor de chuva  
+#define PinoLDR 35              //Definindo o pino de dados conectado ao LDR
+#define PinoCHUVA 32            //Definindo o pino de dados conectado ao sensor de chuva
+//#define PinoLDR 34            //Definição para ESP32 LoRa
+//#define PinoCHUVA 35          //Definição para ESP32 LoRa    
 
 //variaveis
 // WIFI
