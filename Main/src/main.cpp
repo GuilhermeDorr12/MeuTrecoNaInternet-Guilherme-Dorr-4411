@@ -5,12 +5,12 @@
 #include <time.h>               //Biblioteca para modificações do tempo
 #include <DHT.h>                //Biblioteca do sensor de temperatura e umidade
 
-#define TOPICO_SUBSCRIBE       "IoTro/Guilherme/Data_request"     //Tópico de request dos dados
-#define TOPICO_PUBLISH_DHTT    "IoTro/Guilherme/Casa_1/DHT_temp"  //Tópico de envio dos dados de temperatura
-#define TOPICO_PUBLISH_DHTU    "IoTro/Guilherme/Casa_1/DHT_umid"  //Tópico de envio dos dados de umidade
-#define TOPICO_PUBLISH_LDR     "IoTro/Guilherme/Casa_1/LDR"       //Tópico de envio dos dados de luminosidade
-#define TOPICO_PUBLISH_CHUVA   "IoTro/Guilherme/Casa_1/Chuva"     //Tópico de envio dos dados de chuva                                              
-#define ID_MQTT  "IoTro_Guilherme_4411:esp32_1"                   //id mqtt: nome dado ao dispositivo
+#define TOPICO_SUBSCRIBE       "IotTro/Guilherme/Data_request"     //Tópico de request dos dados
+#define TOPICO_PUBLISH_DHTT    "IotTro/Guilherme/Casa_1/DHT_temp"  //Tópico de envio dos dados de temperatura
+#define TOPICO_PUBLISH_DHTU    "IotTro/Guilherme/Casa_1/DHT_umid"  //Tópico de envio dos dados de umidade
+#define TOPICO_PUBLISH_LDR     "IotTro/Guilherme/Casa_1/LDR"       //Tópico de envio dos dados de luminosidade
+#define TOPICO_PUBLISH_CHUVA   "IotTro/Guilherme/Casa_1/Chuva"     //Tópico de envio dos dados de chuva                                              
+#define ID_MQTT  "IotTro_Guilherme_4411:esp32_1"                   //id mqtt: nome dado ao dispositivo
 
 #define DHTPIN 0                //Definindo o pino de dados conectado ao sensor DHT
 #define DHTTYPE DHT11           //Definindo o tipo de sensor DHT (no meu caso, 11)
@@ -26,7 +26,7 @@ const char* SSID = "Net-Virtua-8328";                 //Rede wifi de Conexão
 const char* PASSWORD = "12122002";                    //Senha da rede 
   
 // MQTT
-const char* BROKER_MQTT = "test.mosquitto.org";       //Link de broker MQTT
+const char* BROKER_MQTT = "mqtt.eclipse.org";         //Link de broker MQTT
 int BROKER_PORT = 1883;                               //Porta do Broker MQTT
 char mensagem[50];
 String msg;
@@ -191,7 +191,7 @@ void VerificaConexoesWiFIEMQTT(void)
 
 /* 
 * Função para recebimento de mensagem através do tópico 
-* "IoTro/Guilherme/Data_request", que serve para requerir
+* "IotTro/Guilherme/Data_request", que serve para requerir
 * os dados dos sensores, ou seja, serve para que o dispositivo
 * envie os dados após a requisição.
 */
@@ -211,10 +211,10 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length)
 /*
 * Função responsável pela publicação das informações dos sensores
 * nos tópicos conforme a seguir:
-* "IoTro/Guilherme/Casa_1/DHT_temp"
-* "IoTro/Guilherme/Casa_1/DHT_umid"
-* "IoTro/Guilherme/Casa_1/LDR"
-* "IoTro/Guilherme/Casa_1/Chuva"
+* "IotTro/Guilherme/Casa_1/DHT_temp"
+* "IotTro/Guilherme/Casa_1/DHT_umid"
+* "IotTro/Guilherme/Casa_1/LDR"
+* "IotTro/Guilherme/Casa_1/Chuva"
 *
 */
 void mqtt_data(void)
