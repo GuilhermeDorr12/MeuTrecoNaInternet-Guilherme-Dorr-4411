@@ -28,7 +28,7 @@ const char* PASSWORD = "12122002";                    //Senha da rede
 const char* BROKER_MQTT = "mqtt.eclipse.org";         //Link de broker MQTT
 int BROKER_PORT = 1883;                               //Porta do Broker MQTT
 char mensagem[50];
-String msg;
+String msg = "";
 int cont = 0;
  
 //hora
@@ -196,6 +196,7 @@ void VerificaConexoesWiFIEMQTT(void)
 */
 void mqtt_callback(char* topic, byte* payload, unsigned int length) 
 {
+    msg = "";
     //obtem a string do payload recebido
     for(int i = 0; i < length; i++) 
     {
