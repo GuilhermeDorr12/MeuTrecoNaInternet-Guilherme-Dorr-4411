@@ -1,49 +1,100 @@
+/**
+ * @file main1.cpp
+ * @author Guilherme Mathias Dörr (17000058@liberato.com.br)
+ * @brief Codigo fonte da aplicacao MeuTrecoNaInternet - ESP1
+ * @version 1.0
+ * @date 2020-10-05
+ * 
+ * @copyright Copyright (c) 2020
+ * 
+ */
+
+
+/***************************************************************
+ *                      INCLUDES
+ **************************************************************/
+/* Biblioteca para aportar o ESP */
 #include <Arduino.h>
+/* Biblioteca para conectar o wifi no ESP */
+#include <WiFi.h>               
+/* Biblioteca para funcoes do MQTT no ESP */
+#include <PubSubClient.h>       
+/* Biblioteca para funcoes do sensor DHT */
+#include <DHT.h>                
 
-#include <WiFi.h>               //Biblioteca para conectar o esp ao wifi
-#include <PubSubClient.h>       //Biblioteca com funções de conexão para o MQTT
-#include <time.h>               //Biblioteca para modificações do tempo
-#include <DHT.h>                //Biblioteca do sensor de temperatura e umidade
+/***************************************************************
+ *                      DEFINES
+ **************************************************************/
+/** @brief: Os defines abaixo referem-se, cada um, a um topico e esses, a 
+* uma instância do programa, sendo elas: requisicao de dados, 
+* confirmacao de recebimento de dados, sensor de temperatura, 
+* sensor de umidade, sensor de luz e sensor de chuva. Por fim, 
+* o ID do ESP para o servidor MQTT. */
 
-#define TOPICO_SUBSCRIBE       "IotTro/Guilherme/Data_request"     //Tópico de request dos dados
-#define TOPICO_PUBLISH_DHTT    "IotTro/Guilherme/Casa_1/DHT_temp"  //Tópico de envio dos dados de temperatura
-#define TOPICO_PUBLISH_DHTU    "IotTro/Guilherme/Casa_1/DHT_umid"  //Tópico de envio dos dados de umidade
-#define TOPICO_PUBLISH_LDR     "IotTro/Guilherme/Casa_1/LDR"       //Tópico de envio dos dados de luminosidade
-#define TOPICO_PUBLISH_CHUVA   "IotTro/Guilherme/Casa_1/Chuva"     //Tópico de envio dos dados de chuva                                              
-#define ID_MQTT  "IotTro_Guilherme_4411:esp32_1"                   //id mqtt: nome dado ao dispositivo
+#define TOPICO_SUBSCRIBE       "IotTro/Guilherme/Data_request"     
+#define TOPICO_PUBLISH_CONF    "IotTro/Guilherme/Casa_1/Data_confirm" 
+#define TOPICO_PUBLISH_DHTT    "IotTro/Guilherme/Casa_1/DHT_temp"  
+#define TOPICO_PUBLISH_DHTU    "IotTro/Guilherme/Casa_1/DHT_umid"  
+#define TOPICO_PUBLISH_LDR     "IotTro/Guilherme/Casa_1/LDR"       
+#define TOPICO_PUBLISH_CHUVA   "IotTro/Guilherme/Casa_1/Chuva"                                                  
+#define ID_MQTT  "IotTro_Guilherme_4411:esp32_1"                   
 
-#define DHTPIN 0                //Definindo o pino de dados conectado ao sensor DHT
-#define DHTTYPE DHT11           //Definindo o tipo de sensor DHT (no meu caso, 11)
+/**
+ * @brief: Os defines abaixo referem-se ao pino do ESP ao qual
+ * o DHT esta conectado e o tipo de DHT, no caso, o 11.
+ */
+#define DHTPIN 0                
+#define DHTTYPE DHT11           
 
-#define PinoLDR 35              //Definindo o pino de dados conectado ao LDR
-#define PinoCHUVA 32            //Definindo o pino de dados conectado ao sensor de chuva
-//#define PinoLDR 34            //Definição para ESP32 LoRa
-//#define PinoCHUVA 35          //Definição para ESP32 LoRa    
+/**
+ * @brief: Os defines abaixo referem-se aos pinos dos sensores
+ * de luz e chuva.
+ */
+#define PinoLDR 35              
+#define PinoCHUVA 32            
 
-//variaveis
-// WIFI
-const char* SSID = "Net-Virtua-8328";                 //Rede wifi de Conexão
-const char* PASSWORD = "12122002";                    //Senha da rede 
+/***************************************************************
+ *                      VARIABLES
+ **************************************************************/         
+
+/**
+ * @brief: As variaveis abaixo sao referentes as informacoes da
+ * rede wifi: o nome (SSID) e senha (PASSWORD).
+ */
+const char* SSID = "TeutoNET_Vanduir";                    
+const char* PASSWORD = "Cafepele7667";                    
   
-// MQTT
-const char* BROKER_MQTT = "mqtt.eclipse.org";         //Link de broker MQTT
-int BROKER_PORT = 1883;                               //Porta do Broker MQTT
-char mensagem[50];
+/**
+ * @brief As variaveis abaixo sao referentes as informacoes do
+ * servidor MQTT: link (BROKER_MQTT), porta (BROKER_PORT). E
+ * variaveis auxiliares para as informacoes que serao passadas
+ * pelo MQTT: mensagem e msg.
+ */
+const char* BROKER_MQTT = "mqtt.eclipse.org";         
+int BROKER_PORT = 1883;    
 String msg;
-int cont = 0;
- 
-//hora
-const char* ntpServer = "pool.ntp.org";
-const long  gmtOffset_sec = 0;
-const int   daylightOffset_sec = -3600*3;
-struct tm timeinfo;
 
-//Definindo os 'clientes'
-WiFiClient espClient;                                 //Definindo o cliente como esp: Wifi
-PubSubClient MQTT(espClient);                         //Definindo o cliente como esp: MQTT
-DHT dht(DHTPIN, DHTTYPE);                             //Definindo o cliente como DHT11 e pino 04
+/***************************************************************
+ *                      LIBRARY DEFINITIONS
+ **************************************************************/
 
-//Funções
+/**
+ * @brief: Configuracao do cliente da biblioteca MQTT, 
+ * e definicoes da biblioteca do DHT.
+ */
+WiFiClient espClient;                                 
+PubSubClient MQTT(espClient);                         
+DHT dht(DHTPIN, DHTTYPE);                             
+
+/***************************************************************
+ *                          FUNCTIONS
+ **************************************************************/
+/**
+ * @brief: Abaixo temos as funcoes que sao utilizadas no programa,
+ * cada uma delas sera especificada quando sao determinas as 
+ * funcionalidades, aqui temos apenas as declaracoes.
+ */
+
 void dados_temp_umid();
 void dados_ldr();
 void dados_chuva();
@@ -52,118 +103,128 @@ void mqtt_callback(char* topic, byte* payload, unsigned int length);
 void VerificaConexoesWiFIEMQTT(void);
 void InitOutput(void);
 
-/*
-* Na função setup realizamos a conexão com a rede wifi
-* e setamos as configurações para conexão no broker MQTT,
-* também pegamos da rede wifi a data e hora, através de 
-* uma conexão com o site pool.ntp.org. Esse site permite
-* pegar a data e hora conforme o Meridiano, por isso devemos
-* realizar uma configuração para a localização Brasil.
+/**
+* @brief: Na funcao setup realizamos a conexao com a rede wifi
+* e setamos as configuracoes para conexao no broker MQTT e 
+* configuracoes de tempo. Iniciamos tambem a Serial que sera utilizada
+* para mostrar possíveis erros.
 */
 void setup() {
 
-    Serial.begin(115200);                       //vamos utilizar a serial para verificar se as
-                                                //conexões estão sendo estabelecidas de maneira correta
+    Serial.begin(115200);
     delay(10);
+    /**
+     * @brief: Abaixo temos a conexao wifi atraves de ConnectWiFi().
+     * As informacoes sao exibidas na serial
+     */
     Serial.println("------Conexao WI-FI------");
     Serial.print("Conectando-se na rede: ");
     Serial.println(SSID);
     Serial.println("Aguarde");
-    ConnectWiFi();                             //Função de conexão/reconexão no wifi
-
-    MQTT.setServer(BROKER_MQTT, BROKER_PORT);   //Conectando no broker
-    MQTT.setCallback(mqtt_callback);            //Função para quando se recebe algo
-
-    dht.begin();                                //Habilitando o sensor de temperatura e umidade
-
-    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);       //Configurando o tempo pra Brasil (GMT-3:00)
-    if(!getLocalTime(&timeinfo)){
-    Serial.println("Failed to obtain time");
-    return;
-  }
+    ConnectWiFi();                             
+    /**
+     * @brief: Abaixo temos a conexao no servidor mqtt, tambem
+     * e estabelecido a funcao de retorno, quando se recebe algo.
+     */
+    MQTT.setServer(BROKER_MQTT, BROKER_PORT);   
+    MQTT.setCallback(mqtt_callback);            
+    /**
+     * @brief: Abaixo temos a inicializacao do sensor DHT.
+     */
+    dht.begin();                                
 }
 
-/*
-* Função utilizada para realizar a leitura do sensor DHT11
-* de umidade e temperatura, retornando essas informações.
-*/
+/**
+ * @brief: Abaixo temos a funcao utilizada para ler os dados 
+ * adquiridos pelo sensor DHT atraves dos trechos dht.readTemperature()
+ * e dht.readHumidity(). Em seguida, temos a verificacao se 
+ * ocorreu a leitura correta, caso nao seja verdadeiro, o valor atribuido
+ * e de 200 para ambas variaveis ("t" e "h"). Em seguida e realizada
+ * a publicacao nos topicos relacionados as variaveis.
+ */
 void dados_temp_umid()
 {
-    float t = dht.readTemperature();                    //Função para medida de temperatura
-    float h = dht.readHumidity();                       //Função para medida de umidade
+    float t = dht.readTemperature();                    
+    float h = dht.readHumidity();                       
     char msg_t[10];
     char msg_h[10];
     
-    if (isnan(h) || isnan(t))                           //Verifica se os dados foram lidos
-    {                                                   //Caso não tenham sido lidos, envia "200"
-        t = 200;                                        //para o broker que irá compreender que não
-        h = 200;                                        //ocorreu a leitura correta.
+    if (isnan(h) || isnan(t))                           
+    {                                                   
+        t = 200;                                        
+        h = 200;                                        
     }
     sprintf(msg_t, "%.2f", t);
     sprintf(msg_h, "%.2f", h);
-    MQTT.publish(TOPICO_PUBLISH_DHTT, msg_t);       //Envia para o tópico o dado temperatura
-    MQTT.publish(TOPICO_PUBLISH_DHTU, msg_h);       //Envia para o tópico o dado umidade
+    MQTT.publish(TOPICO_PUBLISH_DHTT, msg_t);       
+    MQTT.publish(TOPICO_PUBLISH_DHTU, msg_h);       
 }
 
-/*
-* Função utilizada para leitura do sensor LDR, através de conversão ADC
-*/
+/**
+ * @brief: A funcao abaixo e utilizada para ler o sensor LDR,
+ * essa leitura e feita traves de um ADC. Em seguida o valor
+ * e publicado no topico. 
+ */
 void dados_ldr()
 {
-    int luz = analogRead(PinoLDR);                  //Leitura do sensor LDR
+    int luz = analogRead(PinoLDR);                  
     char msg_l[10];
 
     sprintf(msg_l, "%i", luz);
-    MQTT.publish(TOPICO_PUBLISH_LDR, msg_l);        //Envia para o tópico o dado luz
+    MQTT.publish(TOPICO_PUBLISH_LDR, msg_l);        
 }
 
-/*
-* Função utilizada para leitura do sensor de chuva, através de conversão ADC
-*/
+/**
+ * @brief: A funcao abaixo e utilizada para ler o sensor de chuva,
+ * essa leitura e feita traves de um ADC. Em seguida o valor
+ * e publicado no topico. 
+ */
 void dados_chuva()
 {
-    int chuva = analogRead(PinoCHUVA);                  //Leitura do sensor LDR
+    int chuva = analogRead(PinoCHUVA);                 
     char msg_c[10];
 
     sprintf(msg_c, "%i", chuva);
-    MQTT.publish(TOPICO_PUBLISH_CHUVA, msg_c);        //Envia para o tópico o dado luz
+    MQTT.publish(TOPICO_PUBLISH_CHUVA, msg_c);        
 }
 
-/*
-* Essa função reconecta o cliente(esp) no broker MQTT
-* e avisa no terminal serial caso a conexão foi bem sucedida.
-*/
+/**
+ * @brief: a funcao abaixo e utilizada para realizar a reconexao
+ * do servidor MQTT caso ocorra a desconexao e comunica na
+ * serial se a resposta foi positiva ou nao. A tentativa e feita
+ * a cada 10 segundos.
+ */
 void reconnectMQTT() 
 {
     while (!MQTT.connected()) 
     {
-        Serial.print("* Tentando se conectar ao Broker MQTT: ");
+        Serial.print("\nConectando-se ao Broker MQTT: ");
         Serial.println(BROKER_MQTT);
         if (MQTT.connect(ID_MQTT)) 
         {
-            Serial.println("Conectado com sucesso ao broker MQTT!");
+            Serial.println("Conexao realizada com sucesso!");
             MQTT.subscribe(TOPICO_SUBSCRIBE); 
         } 
         else
         {
-            Serial.println("Falha ao reconectar no broker.");
-            Serial.println("Havera nova tentatica de conexao em 10s");
+            Serial.println("A conexao foi perdida.");
+            Serial.println("Em 10s ocorrera nova tentativa de conexao.");
             delay(10000);
         }
     }
 }
 
-/*
-* Função utilizada para conexão e reconexão na rede WiFi.
-* Caso o cliente já esteja conectado, ocorre o retorno da função,
-* caso não exista nenhuma conexão, é feita uma nova tentativa.
-*/
+/**
+ * @brief: a funcao abaixo e utilizada para realizar a conexao
+ * com a rede Wifi. e passado na serial as informacoes caso
+ * tenha sido bem sucedida ou nao. 
+ */
 void ConnectWiFi() 
 {
     if (WiFi.status() == WL_CONNECTED)
         return;
          
-    WiFi.begin(SSID, PASSWORD);                 // Conecta na rede WI-FI
+    WiFi.begin(SSID, PASSWORD);                 
      
     while (WiFi.status() != WL_CONNECTED) 
     {
@@ -172,70 +233,74 @@ void ConnectWiFi()
     }
    
     Serial.println();
-    Serial.print("Conectado com sucesso na rede ");
+    Serial.print("O ESP foi conectado a rede Wifi ");
     Serial.print(SSID);
-    Serial.println("IP obtido: ");
-    Serial.println(WiFi.localIP());
 }
 
-/*
-* Verifica se há conexão WiFi e MQTT
-*/
+/**
+ * @brief: A funcao abaixo e responsavel por manter a
+ * conexao com o WiFi e MQTT e caso ocorra desconexao,
+ * tentar novamente. 
+ */
 void VerificaConexoesWiFIEMQTT(void)
 {
     if (!MQTT.connected()) 
-        reconnectMQTT(); //se não há conexão com o Broker, a conexão é refeita
+        reconnectMQTT(); 
      
-     ConnectWiFi(); //se não há conexão com o WiFI, a conexão é refeita
+     ConnectWiFi(); 
 }
 
-/* 
-* Função para recebimento de mensagem através do tópico 
-* "IotTro/Guilherme/Data_request", que serve para requerir
-* os dados dos sensores, ou seja, serve para que o dispositivo
-* envie os dados após a requisição.
-*/
+/**
+ * @brief: A funcao abaixo e responsavel por receber uma
+ * mensagem, essa mensagem serve para pedir os dados da aplicacao
+ * e e feita a cada 15 minutos. Em seguida publica na serial
+ * o que foi recebido.
+ */
 void mqtt_callback(char* topic, byte* payload, unsigned int length) 
 {
-    //obtem a string do payload recebido
     for(int i = 0; i < length; i++) 
     {
        char c = (char)payload[i];
        msg += c;
     }
+
+    char msg_c[20];
+
+    sprintf(msg_c, "Pedido recebido");
+    MQTT.publish(TOPICO_PUBLISH_CONF, msg_c);
  
-    Serial.print("Chegou a seguinte string via MQTT: ");
+    Serial.print("Dado recebido: ");
     Serial.println(msg);
 }
 
-/*
-* Função responsável pela publicação das informações dos sensores
-* nos tópicos conforme a seguir:
-* "IotTro/Guilherme/Casa_1/DHT_temp"
-* "IotTro/Guilherme/Casa_1/DHT_umid"
-* "IotTro/Guilherme/Casa_1/LDR"
-* "IotTro/Guilherme/Casa_1/Chuva"
-*
-*/
+/**
+ * @brief: Aqui temos a chamada de cada funcao, definida
+ * como MQTT data. Em seguida envia na serial uma confirmacao
+ * do envio de informacoes. 
+ */
 void mqtt_data(void)
 {
-    cont++;
     dados_temp_umid();
     dados_ldr();
     dados_chuva();
-    //printLocalTime();
-    Serial.println("Fim do envio de mensagem.");
+    Serial.println("Mensagem enviada.");
     msg = ""; 
 }
 
+/**
+ * @brief: Aqui temos a funcao principal da aplicacao, que fica
+ * em looping. Primeiro ocorre a verificacao de conexao, em seguida,
+ * caso seja recebida uma mensagem envia as informacoes e por fim
+ * o keep-alive da comunicacao MQTT. 
+ */
 void loop() {
   
-  VerificaConexoesWiFIEMQTT(); //garante funcionamento das conexões WiFi e ao broker MQTT
+  VerificaConexoesWiFIEMQTT(); 
 
   if(msg == "1")
   {
-      mqtt_data(); //envia o status de todos os outputs para o Broker no protocolo esperado
+      mqtt_data(); 
   }
 
-  MQTT.loop(); //keep-alive da comunicação com broker MQTT
+  MQTT.loop(); 
 }
