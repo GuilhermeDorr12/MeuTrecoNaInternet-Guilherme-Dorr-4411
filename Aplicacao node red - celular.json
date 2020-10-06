@@ -1,0 +1,657 @@
+[
+    {
+        "id": "537be023.db1df",
+        "type": "tab",
+        "label": "MeuTrecoNaInternet",
+        "disabled": false,
+        "info": "Essa é a aplicação MeuTrecoNaInternet para o celular, não há diferença em relação a central, apenas uma outra forma de verificar os dados, porém não é possível verificar gráfico de temperatura ou gravar essa informação para um arquivo, ou seja, essa aplicação serve unicamente para requisitar e verificar os dados do momento."
+    },
+    {
+        "id": "9cbe8bda.186ab8",
+        "type": "inject",
+        "z": "537be023.db1df",
+        "name": "Requisição de dados",
+        "props": [
+            {
+                "p": "payload",
+                "v": "1",
+                "vt": "str"
+            },
+            {
+                "p": "topic",
+                "v": "",
+                "vt": "string"
+            }
+        ],
+        "repeat": "900",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "1",
+        "payloadType": "str",
+        "x": 220,
+        "y": 60,
+        "wires": [
+            [
+                "9942829e.d93be"
+            ]
+        ],
+        "info": "Temos aqui a requisição de dados das aplicações, que ocorre a cada 15 minutos, podemos também pedir a atualização a qualquer momento, visto que é um inject node.\nDefinimos que a mensagem \"1\" pede o dado das aplicações."
+    },
+    {
+        "id": "5df895c9.548c2c",
+        "type": "mqtt out",
+        "z": "537be023.db1df",
+        "name": "",
+        "topic": "IotTro/Guilherme/Data_request",
+        "qos": "",
+        "retain": "",
+        "broker": "a8ee547f.1cbd88",
+        "x": 630,
+        "y": 60,
+        "wires": [],
+        "info": "Envio de requisição de dados."
+    },
+    {
+        "id": "43b938b.f79ebc8",
+        "type": "mqtt in",
+        "z": "537be023.db1df",
+        "name": "Temperatura",
+        "topic": "IotTro/Guilherme/Casa_2/DHT_temp",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "a8ee547f.1cbd88",
+        "x": 150,
+        "y": 200,
+        "wires": [
+            [
+                "45d28945.d11aa8"
+            ]
+        ]
+    },
+    {
+        "id": "cc949f2a.e2d67",
+        "type": "mqtt in",
+        "z": "537be023.db1df",
+        "name": "Umidade",
+        "topic": "IotTro/Guilherme/Casa_2/DHT_umid",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "a8ee547f.1cbd88",
+        "x": 140,
+        "y": 260,
+        "wires": [
+            [
+                "60ac2cd6.3c4ea4"
+            ]
+        ]
+    },
+    {
+        "id": "933992b7.9abb5",
+        "type": "mqtt in",
+        "z": "537be023.db1df",
+        "name": "Luz",
+        "topic": "IotTro/Guilherme/Casa_2/LDR",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "a8ee547f.1cbd88",
+        "x": 130,
+        "y": 320,
+        "wires": [
+            [
+                "b33f02de.cc15a"
+            ]
+        ]
+    },
+    {
+        "id": "45424436.998a6c",
+        "type": "mqtt in",
+        "z": "537be023.db1df",
+        "name": "Chuva",
+        "topic": "IotTro/Guilherme/Casa_2/Chuva",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "a8ee547f.1cbd88",
+        "x": 130,
+        "y": 380,
+        "wires": [
+            [
+                "5e7a34e8.b0c93c"
+            ]
+        ]
+    },
+    {
+        "id": "9942829e.d93be",
+        "type": "json",
+        "z": "537be023.db1df",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 410,
+        "y": 60,
+        "wires": [
+            [
+                "5df895c9.548c2c"
+            ]
+        ],
+        "info": "Parser JSON."
+    },
+    {
+        "id": "b33f02de.cc15a",
+        "type": "function",
+        "z": "537be023.db1df",
+        "name": "Verificação de Luz",
+        "func": "var luz_p;\n\nluz_p = ((msg.payload*100)/4096);\n\n\nreturn {payload: Math.round(luz_p)};",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 370,
+        "y": 320,
+        "wires": [
+            [
+                "7edd1c23.243554"
+            ]
+        ],
+        "info": "Função que transforma o valor recebido (valor em bits recebido pelo adc na aplicação de São Leopoldo) em porcentagem para que seja apresentado no dashboard."
+    },
+    {
+        "id": "5e7a34e8.b0c93c",
+        "type": "function",
+        "z": "537be023.db1df",
+        "name": "Verfiicação de Chuva",
+        "func": "var chuva;\nvar chuva_msg;\n\nchuva = ((msg.payload*100)/4096);\n\nif(chuva > 95)\n{\n    chuva_msg = \"Está chovendo bastante.\";\n}\n\nif(chuva > 45 && chuva < 95)\n{\n    chuva_msg = \"Está Chovendo forte.\";\n}\n\nif(chuva > 15 && chuva < 45)\n{\n    chuva_msg = \"Está Chovendo moderadamente.\";\n}\n\nif(chuva < 15)\n{\n    chuva_msg = \"Não está chovendo.\"\n}\n\nreturn {payload: chuva_msg};\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 380,
+        "y": 380,
+        "wires": [
+            [
+                "c9275e9c.6abb7"
+            ]
+        ],
+        "info": "Aqui são definidos valores para determinação de quantificação de chuva, retornando uma mensagem relacionada ao nível de chuva presente na aplicação de São Leopoldo."
+    },
+    {
+        "id": "45d28945.d11aa8",
+        "type": "function",
+        "z": "537be023.db1df",
+        "name": "Armazenando",
+        "func": "var now = new Date().toLocaleString(\"pt-BR\");\nvar temp_date;\ntemp_date = msg.payload + \"\\n\" + now;\nreturn [msg, {payload: now}, {payload: temp_date}];  ",
+        "outputs": 3,
+        "noerr": 0,
+        "x": 360,
+        "y": 200,
+        "wires": [
+            [
+                "5e59f01.3f5351"
+            ],
+            [
+                "4d17b35b.e54b1c"
+            ],
+            []
+        ],
+        "info": "Essa função possui três saídas: a primeira é a mensagem que foi recebida no tópico de temperatura, a segunda o momento de recepção do dado para apresentar no dashboard e o terceiro une a informação da temperatura com data e hora para enviar a um documento, onde fica registrado as temperaturas medidas."
+    },
+    {
+        "id": "121dbba0.7cdce4",
+        "type": "mqtt in",
+        "z": "537be023.db1df",
+        "name": "Temperatura",
+        "topic": "IotTro/Guilherme/Casa_1/DHT_temp",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "a8ee547f.1cbd88",
+        "x": 150,
+        "y": 520,
+        "wires": [
+            [
+                "38cd3b48.c866b4"
+            ]
+        ]
+    },
+    {
+        "id": "a6242be4.304188",
+        "type": "mqtt in",
+        "z": "537be023.db1df",
+        "name": "Umidade",
+        "topic": "IotTro/Guilherme/Casa_1/DHT_umid",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "a8ee547f.1cbd88",
+        "x": 140,
+        "y": 580,
+        "wires": [
+            [
+                "e56b6d70.663b8"
+            ]
+        ]
+    },
+    {
+        "id": "cf4e52f7.1fe32",
+        "type": "mqtt in",
+        "z": "537be023.db1df",
+        "name": "Luz",
+        "topic": "IotTro/Guilherme/Casa_1/LDR",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "a8ee547f.1cbd88",
+        "x": 130,
+        "y": 640,
+        "wires": [
+            [
+                "37d1c879.2e5a58"
+            ]
+        ]
+    },
+    {
+        "id": "c4ac895b.c8dd08",
+        "type": "mqtt in",
+        "z": "537be023.db1df",
+        "name": "Chuva",
+        "topic": "IotTro/Guilherme/Casa_1/Chuva",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "a8ee547f.1cbd88",
+        "x": 130,
+        "y": 700,
+        "wires": [
+            [
+                "4249f763.2755e8"
+            ]
+        ]
+    },
+    {
+        "id": "37d1c879.2e5a58",
+        "type": "function",
+        "z": "537be023.db1df",
+        "name": "Verificação de Luz",
+        "func": "var luz_p;\n\nluz_p = ((msg.payload*100)/4096);\n\n\nreturn {payload: Math.round(luz_p)};",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 390,
+        "y": 640,
+        "wires": [
+            [
+                "3de2bc66.20ee04"
+            ]
+        ]
+    },
+    {
+        "id": "4249f763.2755e8",
+        "type": "function",
+        "z": "537be023.db1df",
+        "name": "Verificação de Chuva",
+        "func": "var chuva;\nvar chuva_msg;\n\nchuva = ((msg.payload*100)/4096);\n\nif(chuva > 95)\n{\n    chuva_msg = \"Está chovendo bastante.\";\n}\n\nif(chuva > 45 && chuva < 95)\n{\n    chuva_msg = \"Está Chovendo forte.\";\n}\n\nif(chuva > 15 && chuva < 45)\n{\n    chuva_msg = \"Está Chovendo moderadamente.\";\n}\n\nif(chuva < 15)\n{\n    chuva_msg = \"Não está chovendo.\"\n}\n\nreturn {payload: chuva_msg};\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 400,
+        "y": 700,
+        "wires": [
+            [
+                "ca295f05.ec85"
+            ]
+        ]
+    },
+    {
+        "id": "c0c1d36a.f2eb8",
+        "type": "ui_text",
+        "z": "537be023.db1df",
+        "group": "4a597564.4f203c",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Temperatura",
+        "format": "{{msg.payload}}°C",
+        "layout": "row-spread",
+        "x": 630,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "13586e09.2d4a62",
+        "type": "ui_text",
+        "z": "537be023.db1df",
+        "group": "4a597564.4f203c",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "name": "Atualização",
+        "label": "Atualizado em",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 630,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "b4437b3d.e04068",
+        "type": "comment",
+        "z": "537be023.db1df",
+        "name": "Pedido de dados",
+        "info": "",
+        "x": 160,
+        "y": 20,
+        "wires": []
+    },
+    {
+        "id": "931f2f9d.46204",
+        "type": "comment",
+        "z": "537be023.db1df",
+        "name": "Recepção de dados - São Leopoldo",
+        "info": "",
+        "x": 220,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "1865b67f.5b7cea",
+        "type": "comment",
+        "z": "537be023.db1df",
+        "name": "Recepção de dados - Teutônia",
+        "info": "As funções aqui utilizadas são idênticas ao conjunto de funções da Recepção de dados - São Leopoldo, por isso não há descrição em cada uma, visto que isso foi realizado acima.",
+        "x": 200,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "7edd1c23.243554",
+        "type": "ui_gauge",
+        "z": "537be023.db1df",
+        "name": "",
+        "group": "321779fe.35b8c6",
+        "order": 4,
+        "width": "4",
+        "height": "3",
+        "gtype": "gage",
+        "title": "Luminosidade",
+        "label": "",
+        "format": "{{value}}%",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#0000a0",
+            "#008040",
+            "#ffff00"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 640,
+        "y": 320,
+        "wires": [],
+        "info": "Apresentação no dashboard da luminosidade do ambiente da aplicação de São Leopoldo."
+    },
+    {
+        "id": "38cd3b48.c866b4",
+        "type": "function",
+        "z": "537be023.db1df",
+        "name": "Armazenando",
+        "func": "var now = new Date().toLocaleString(\"pt-BR\");\nvar temp_date;\ntemp_date = msg.payload + \"\\n\" + now;\nreturn [msg, {payload: now}, {payload: temp_date}];  ",
+        "outputs": 3,
+        "noerr": 0,
+        "x": 380,
+        "y": 520,
+        "wires": [
+            [
+                "c0c1d36a.f2eb8"
+            ],
+            [
+                "13586e09.2d4a62"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "3de2bc66.20ee04",
+        "type": "ui_gauge",
+        "z": "537be023.db1df",
+        "name": "",
+        "group": "4a597564.4f203c",
+        "order": 3,
+        "width": "4",
+        "height": "3",
+        "gtype": "gage",
+        "title": "Luminosidade",
+        "label": "",
+        "format": "{{value}}%",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#0000a0",
+            "#008040",
+            "#ffff00"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 640,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "60ac2cd6.3c4ea4",
+        "type": "ui_gauge",
+        "z": "537be023.db1df",
+        "name": "",
+        "group": "321779fe.35b8c6",
+        "order": 5,
+        "width": "4",
+        "height": "3",
+        "gtype": "wave",
+        "title": "Umidade",
+        "label": "%",
+        "format": "{{value}}%",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 340,
+        "y": 260,
+        "wires": [],
+        "info": "Apresentação da umidade medida em São Leopoldo."
+    },
+    {
+        "id": "e56b6d70.663b8",
+        "type": "ui_gauge",
+        "z": "537be023.db1df",
+        "name": "",
+        "group": "4a597564.4f203c",
+        "order": 4,
+        "width": "4",
+        "height": "3",
+        "gtype": "wave",
+        "title": "Umidade",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 360,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "5e59f01.3f5351",
+        "type": "ui_text",
+        "z": "537be023.db1df",
+        "group": "321779fe.35b8c6",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Temperatura",
+        "format": "{{msg.payload}}°C",
+        "layout": "row-spread",
+        "x": 550,
+        "y": 180,
+        "wires": [],
+        "info": "Apresentação da temperatura momentânea medida na aplicação de São Leopoldo."
+    },
+    {
+        "id": "4d17b35b.e54b1c",
+        "type": "ui_text",
+        "z": "537be023.db1df",
+        "group": "321779fe.35b8c6",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "name": "Atualização",
+        "label": "Atualizado em",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 550,
+        "y": 220,
+        "wires": [],
+        "info": "Hora registrada da recepção de dados da temperatura de são leopoldo."
+    },
+    {
+        "id": "ca295f05.ec85",
+        "type": "ui_text",
+        "z": "537be023.db1df",
+        "group": "4a597564.4f203c",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 620,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "c9275e9c.6abb7",
+        "type": "ui_text",
+        "z": "537be023.db1df",
+        "group": "321779fe.35b8c6",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 610,
+        "y": 380,
+        "wires": [],
+        "info": "Apresentação da mensagem de chuva da aplicação de São Leopoldo."
+    },
+    {
+        "id": "6eef288b.33d4b8",
+        "type": "ui_button",
+        "z": "537be023.db1df",
+        "name": "",
+        "group": "86fd82c9.0ea7b",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Dados",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "",
+        "x": 410,
+        "y": 100,
+        "wires": [
+            [
+                "5df895c9.548c2c"
+            ]
+        ]
+    },
+    {
+        "id": "a8ee547f.1cbd88",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "eclipse",
+        "broker": "mqtt.eclipse.org",
+        "port": "1883",
+        "tls": "557b27c3.cd91e8",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "4a597564.4f203c",
+        "type": "ui_group",
+        "z": "",
+        "name": "Teutônia",
+        "tab": "251f0085.c1bb3",
+        "order": 2,
+        "disp": true,
+        "width": "8",
+        "collapse": false
+    },
+    {
+        "id": "321779fe.35b8c6",
+        "type": "ui_group",
+        "z": "",
+        "name": "São Leopoldo",
+        "tab": "251f0085.c1bb3",
+        "order": 1,
+        "disp": true,
+        "width": "8",
+        "collapse": false
+    },
+    {
+        "id": "86fd82c9.0ea7b",
+        "type": "ui_group",
+        "z": "",
+        "name": "",
+        "tab": "251f0085.c1bb3",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "557b27c3.cd91e8",
+        "type": "tls-config",
+        "z": "",
+        "name": "",
+        "cert": "",
+        "key": "",
+        "ca": "",
+        "certname": "mosquitto.org (2).crt",
+        "keyname": "",
+        "caname": "",
+        "servername": "",
+        "verifyservercert": false
+    },
+    {
+        "id": "251f0085.c1bb3",
+        "type": "ui_tab",
+        "z": "",
+        "name": "MeuTrecoNaInternet",
+        "icon": "dashboard",
+        "order": 5,
+        "disabled": false,
+        "hidden": false
+    }
+]
