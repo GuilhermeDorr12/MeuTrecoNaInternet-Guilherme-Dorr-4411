@@ -1,50 +1,19 @@
 [
     {
-        "id": "ebc07f36.aaf98",
-        "type": "ui_button",
+        "id": "58a2ef9b.30441",
+        "type": "function",
         "z": "3b4bf7ec.3f2d78",
-        "name": "",
-        "group": "f2c9639f.0fadd",
-        "order": 2,
-        "width": 0,
-        "height": 0,
-        "passthru": false,
-        "label": "Dados",
-        "tooltip": "",
-        "color": "",
-        "bgcolor": "",
-        "icon": "",
-        "payload": "1",
-        "payloadType": "str",
-        "topic": "",
-        "x": 400,
-        "y": 100,
+        "name": "Verfiicação de Chuva",
+        "func": "var chuva;\nvar chuva_msg;\n\nchuva = ((msg.payload*100)/4096);\n\nif(chuva > 45)\n{\n    chuva_msg = \"Está chovendo.\";\n}\n\nif (chuva < 45)\n{\n    chuva_msg = \"Não está chovendo.\";\n}\n\nreturn {payload: chuva_msg};\n\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 380,
+        "y": 380,
         "wires": [
             [
-                "f3929b84.2c4b08"
+                "1d831bfe.129ab4"
             ]
         ],
-        "info": "Botão presente no dashboard para requisitar os dados."
-    },
-    {
-        "id": "f2c9639f.0fadd",
-        "type": "ui_group",
-        "z": "",
-        "name": "",
-        "tab": "326c20c8.fa17c",
-        "order": 3,
-        "disp": true,
-        "width": "6",
-        "collapse": false
-    },
-    {
-        "id": "326c20c8.fa17c",
-        "type": "ui_tab",
-        "z": "",
-        "name": "MeuTrecoNaInternet",
-        "icon": "dashboard",
-        "order": 5,
-        "disabled": false,
-        "hidden": false
+        "info": "Aqui são definidos valores para determinação de quantificação de chuva, retornando se há ou não chuva na aplicação de São Leopoldo."
     }
 ]
