@@ -1,5 +1,149 @@
 [
     {
+        "id": "3b4bf7ec.3f2d78",
+        "type": "tab",
+        "label": "MeuTrecoNaInternet",
+        "disabled": false,
+        "info": "Essa aplicação será a central para o projeto Meu Treco na Internet, desenvolvido por Guilherme Dörr da turma 4411. A ideia é explicada nos arquivos ReadMe presente no GitHub.\nAqui teremos a requisição de dados, recepção e exposição deles."
+    },
+    {
+        "id": "ca3bf36e.246d4",
+        "type": "inject",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Requisição de dados",
+        "topic": "",
+        "payload": "1",
+        "payloadType": "str",
+        "repeat": "900",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "x": 220,
+        "y": 60,
+        "wires": [
+            [
+                "f6315a8.081f2a8"
+            ]
+        ],
+        "info": "Temos aqui a requisição de dados das aplicações, que ocorre a cada 15 minutos, podemos também pedir a atualização a qualquer momento, visto que é um inject node.\nDefinimos que a mensagem \"1\" pede o dado das aplicações."
+    },
+    {
+        "id": "f3929b84.2c4b08",
+        "type": "mqtt out",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "",
+        "topic": "IotTro/Guilherme/Data_request",
+        "qos": "",
+        "retain": "",
+        "broker": "6123dac3.08e854",
+        "x": 630,
+        "y": 60,
+        "wires": [],
+        "info": "Envio de requisição de dados."
+    },
+    {
+        "id": "9338dd55.9019c",
+        "type": "mqtt in",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Temperatura",
+        "topic": "IotTro/Guilherme/Casa_2/DHT_temp",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "6123dac3.08e854",
+        "x": 150,
+        "y": 200,
+        "wires": [
+            [
+                "7e14df1f.3bcef"
+            ]
+        ]
+    },
+    {
+        "id": "3d21c2bb.da466e",
+        "type": "mqtt in",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Umidade",
+        "topic": "IotTro/Guilherme/Casa_2/DHT_umid",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "6123dac3.08e854",
+        "x": 140,
+        "y": 260,
+        "wires": [
+            [
+                "ab92f752.4b7ee8"
+            ]
+        ]
+    },
+    {
+        "id": "efea9683.f7d238",
+        "type": "mqtt in",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Luz",
+        "topic": "IotTro/Guilherme/Casa_2/LDR",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "6123dac3.08e854",
+        "x": 130,
+        "y": 320,
+        "wires": [
+            [
+                "decbe666.d1aa08"
+            ]
+        ]
+    },
+    {
+        "id": "4e960a38.1b7c14",
+        "type": "mqtt in",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Chuva",
+        "topic": "IotTro/Guilherme/Casa_2/Chuva",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "6123dac3.08e854",
+        "x": 130,
+        "y": 380,
+        "wires": [
+            [
+                "58a2ef9b.30441"
+            ]
+        ]
+    },
+    {
+        "id": "f6315a8.081f2a8",
+        "type": "json",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "",
+        "property": "payload",
+        "action": "",
+        "pretty": false,
+        "x": 410,
+        "y": 60,
+        "wires": [
+            [
+                "f3929b84.2c4b08"
+            ]
+        ],
+        "info": "Parser JSON."
+    },
+    {
+        "id": "decbe666.d1aa08",
+        "type": "function",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Verificação de Luz",
+        "func": "var luz_p;\n\nluz_p = ((msg.payload*100)/4096);\n\n\nreturn {payload: Math.round(luz_p)};",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 370,
+        "y": 320,
+        "wires": [
+            [
+                "da3ebd4b.cd508"
+            ]
+        ],
+        "info": "Função que transforma o valor recebido (valor em bits recebido pelo adc na aplicação de São Leopoldo) em porcentagem para que seja apresentado no dashboard."
+    },
+    {
         "id": "58a2ef9b.30441",
         "type": "function",
         "z": "3b4bf7ec.3f2d78",
@@ -15,5 +159,724 @@
             ]
         ],
         "info": "Aqui são definidos valores para determinação de quantificação de chuva, retornando se há ou não chuva na aplicação de São Leopoldo."
+    },
+    {
+        "id": "52d181d.9b58d8",
+        "type": "mqtt in",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Pedido de dados",
+        "topic": "IotTro/Guilherme/Data_request",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "6123dac3.08e854",
+        "x": 980,
+        "y": 60,
+        "wires": [
+            [
+                "b312d092.5e228"
+            ]
+        ],
+        "info": "Aqui verificamos se o pedido de dados foi enviado para a aplicação de São Leopoldo e mostramos isso na aba \"debug\"."
+    },
+    {
+        "id": "343281fe.c2ee7e",
+        "type": "file",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Arquivo de temperatura",
+        "filename": "C:\\Users\\guilh\\OneDrive\\Área de Trabalho/temperatura",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 670,
+        "y": 260,
+        "wires": [
+            []
+        ],
+        "info": "Arquivo de armazenamento da temperatura de São Leopoldo com data e hora."
+    },
+    {
+        "id": "7e14df1f.3bcef",
+        "type": "function",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Armazenando",
+        "func": "var now = new Date().toLocaleString(\"pt-BR\");\nvar temp_date;\ntemp_date = msg.payload + \"\\n\" + now;\nreturn [msg, {payload: now}, {payload: temp_date}];  ",
+        "outputs": 3,
+        "noerr": 0,
+        "x": 360,
+        "y": 200,
+        "wires": [
+            [
+                "6d6109c8.a14a28",
+                "b38977.280f2688"
+            ],
+            [
+                "e1139b4f.fc62e8"
+            ],
+            [
+                "343281fe.c2ee7e"
+            ]
+        ],
+        "info": "Essa função possui três saídas: a primeira é a mensagem que foi recebida no tópico de temperatura, a segunda o momento de recepção do dado para apresentar no dashboard e o terceiro une a informação da temperatura com data e hora para enviar a um documento, onde fica registrado as temperaturas medidas."
+    },
+    {
+        "id": "dff00150.cd659",
+        "type": "mqtt in",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Temperatura",
+        "topic": "IotTro/Guilherme/Casa_1/DHT_temp",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "6123dac3.08e854",
+        "x": 150,
+        "y": 520,
+        "wires": [
+            [
+                "86537737.916858"
+            ]
+        ]
+    },
+    {
+        "id": "7472a460.4eecfc",
+        "type": "mqtt in",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Umidade",
+        "topic": "IotTro/Guilherme/Casa_1/DHT_umid",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "6123dac3.08e854",
+        "x": 140,
+        "y": 580,
+        "wires": [
+            [
+                "c87b2d46.81e4e"
+            ]
+        ]
+    },
+    {
+        "id": "6b401582.1a8a8c",
+        "type": "mqtt in",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Luz",
+        "topic": "IotTro/Guilherme/Casa_1/LDR",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "6123dac3.08e854",
+        "x": 130,
+        "y": 640,
+        "wires": [
+            [
+                "b6f21557.59b0c8"
+            ]
+        ]
+    },
+    {
+        "id": "917fa11d.08bee",
+        "type": "mqtt in",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Chuva",
+        "topic": "IotTro/Guilherme/Casa_1/Chuva",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "6123dac3.08e854",
+        "x": 130,
+        "y": 700,
+        "wires": [
+            [
+                "9f466fd8.73ff7"
+            ]
+        ]
+    },
+    {
+        "id": "b6f21557.59b0c8",
+        "type": "function",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Verificação de Luz",
+        "func": "var luz_p;\n\nluz_p = ((msg.payload*100)/4096);\n\n\nreturn {payload: Math.round(luz_p)};",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 390,
+        "y": 640,
+        "wires": [
+            [
+                "3621e2f3.19aede"
+            ]
+        ]
+    },
+    {
+        "id": "9f466fd8.73ff7",
+        "type": "function",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Verificação de Chuva",
+        "func": "var chuva;\nvar chuva_msg;\n\nchuva = ((msg.payload*100)/4096);\n\nif(chuva > 45)\n{\n    chuva_msg = \"Está chovendo.\";\n}\n\nif (chuva < 45)\n{\n    chuva_msg = \"Não está chovendo.\";\n}\n\nreturn {payload: chuva_msg};\n",
+        "outputs": 1,
+        "noerr": 0,
+        "x": 400,
+        "y": 700,
+        "wires": [
+            [
+                "609daa6.e612754"
+            ]
+        ]
+    },
+    {
+        "id": "7286ccb6.f2beb4",
+        "type": "ui_text",
+        "z": "3b4bf7ec.3f2d78",
+        "group": "c89d1384.3b0bf",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Temperatura",
+        "format": "{{msg.payload}}°C",
+        "layout": "row-spread",
+        "x": 630,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "2f69ff0a.e44a8",
+        "type": "mqtt in",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Pedido de dados",
+        "topic": "IotTro/Guilherme/Data_request",
+        "qos": "0",
+        "datatype": "auto",
+        "broker": "6123dac3.08e854",
+        "x": 980,
+        "y": 160,
+        "wires": [
+            [
+                "10f2c6f8.006de9"
+            ]
+        ],
+        "info": "Aqui verificamos se o pedido de dados foi enviado para a aplicação de Teutônia e mostramos isso na aba \"debug\"."
+    },
+    {
+        "id": "93bc4311.e32a7",
+        "type": "file",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Arquivo de Temperatura",
+        "filename": "C:\\Users\\guilh\\OneDrive\\Área de Trabalho/temperatura2",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 670,
+        "y": 580,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "d38759d8.657878",
+        "type": "ui_text",
+        "z": "3b4bf7ec.3f2d78",
+        "group": "c89d1384.3b0bf",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "name": "Atualização",
+        "label": "Atualizado em",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 630,
+        "y": 540,
+        "wires": []
+    },
+    {
+        "id": "10f2c6f8.006de9",
+        "type": "debug",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Teutônia",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 1180,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "b312d092.5e228",
+        "type": "debug",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "São Leopoldo",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "payload",
+        "targetType": "msg",
+        "x": 1200,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "394d39f5.05cd96",
+        "type": "mqtt in",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Confirmação",
+        "topic": "IotTro/Guilherme/Casa_1/Data_confirm",
+        "qos": "0",
+        "datatype": "utf8",
+        "broker": "6123dac3.08e854",
+        "x": 970,
+        "y": 200,
+        "wires": [
+            [
+                "10f2c6f8.006de9"
+            ]
+        ],
+        "info": "Aqui confirmamos que houve a recepção do dado pela aplicação, uma mensagem de confirmação é apresentada na aba \"debug\"."
+    },
+    {
+        "id": "8120df6d.826f3",
+        "type": "mqtt in",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Confirmação",
+        "topic": "IotTro/Guilherme/Casa_2/Data_confirm",
+        "qos": "0",
+        "datatype": "utf8",
+        "broker": "6123dac3.08e854",
+        "x": 970,
+        "y": 100,
+        "wires": [
+            [
+                "b312d092.5e228"
+            ]
+        ],
+        "info": "Aqui confirmamos que houve a recepção do dado pela aplicação, uma mensagem de confirmação é apresentada na aba \"debug\"."
+    },
+    {
+        "id": "1164864b.522f6a",
+        "type": "comment",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Pedido de dados",
+        "info": "",
+        "x": 160,
+        "y": 20,
+        "wires": []
+    },
+    {
+        "id": "d752ce88.5e343",
+        "type": "comment",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Recepção de dados - São Leopoldo",
+        "info": "",
+        "x": 220,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "75dc4368.5ef4cc",
+        "type": "comment",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Recepção de dados - Teutônia",
+        "info": "As funções aqui utilizadas são idênticas ao conjunto de funções da Recepção de dados - São Leopoldo, por isso não há descrição em cada uma, visto que isso foi realizado acima.",
+        "x": 200,
+        "y": 460,
+        "wires": []
+    },
+    {
+        "id": "f6a5d2a8.5f766",
+        "type": "comment",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Confirmação de pedido",
+        "info": "",
+        "x": 1000,
+        "y": 20,
+        "wires": []
+    },
+    {
+        "id": "6d6109c8.a14a28",
+        "type": "ui_chart",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "",
+        "group": "f2c9639f.0fadd",
+        "order": 1,
+        "width": "5",
+        "height": "3",
+        "label": "Temperatura - São Leopoldo",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "10",
+        "ymax": "50",
+        "removeOlder": "2",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "86400",
+        "cutout": 0,
+        "useOneColor": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "useOldStyle": false,
+        "outputs": 1,
+        "x": 680,
+        "y": 160,
+        "wires": [
+            []
+        ],
+        "info": "Apresentação gráfica da temperatura medida na aplicação de São Leopoldo."
+    },
+    {
+        "id": "da3ebd4b.cd508",
+        "type": "ui_gauge",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "",
+        "group": "6d048280.904bec",
+        "order": 4,
+        "width": "4",
+        "height": "3",
+        "gtype": "gage",
+        "title": "Luminosidade",
+        "label": "",
+        "format": "{{value}}%",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#0000a0",
+            "#008040",
+            "#ffff00"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 640,
+        "y": 320,
+        "wires": [],
+        "info": "Apresentação no dashboard da luminosidade do ambiente da aplicação de São Leopoldo."
+    },
+    {
+        "id": "86537737.916858",
+        "type": "function",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "Armazenando",
+        "func": "var now = new Date().toLocaleString(\"pt-BR\");\nvar temp_date;\ntemp_date = msg.payload + \"\\n\" + now;\nreturn [msg, {payload: now}, {payload: temp_date}];  ",
+        "outputs": 3,
+        "noerr": 0,
+        "x": 380,
+        "y": 520,
+        "wires": [
+            [
+                "aeb681d4.848b4",
+                "7286ccb6.f2beb4"
+            ],
+            [
+                "d38759d8.657878"
+            ],
+            [
+                "93bc4311.e32a7"
+            ]
+        ]
+    },
+    {
+        "id": "aeb681d4.848b4",
+        "type": "ui_chart",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "",
+        "group": "f2c9639f.0fadd",
+        "order": 1,
+        "width": "5",
+        "height": "3",
+        "label": "Temperatura - Teutônia",
+        "chartType": "line",
+        "legend": "false",
+        "xformat": "HH:mm",
+        "interpolate": "linear",
+        "nodata": "",
+        "dot": false,
+        "ymin": "10",
+        "ymax": "50",
+        "removeOlder": "2",
+        "removeOlderPoints": "",
+        "removeOlderUnit": "86400",
+        "cutout": 0,
+        "useOneColor": false,
+        "colors": [
+            "#1f77b4",
+            "#aec7e8",
+            "#ff7f0e",
+            "#2ca02c",
+            "#98df8a",
+            "#d62728",
+            "#ff9896",
+            "#9467bd",
+            "#c5b0d5"
+        ],
+        "useOldStyle": false,
+        "outputs": 1,
+        "x": 670,
+        "y": 480,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "3621e2f3.19aede",
+        "type": "ui_gauge",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "",
+        "group": "c89d1384.3b0bf",
+        "order": 3,
+        "width": "4",
+        "height": "3",
+        "gtype": "gage",
+        "title": "Luminosidade",
+        "label": "",
+        "format": "{{value}}%",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#0000a0",
+            "#008040",
+            "#ffff00"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 640,
+        "y": 640,
+        "wires": []
+    },
+    {
+        "id": "ab92f752.4b7ee8",
+        "type": "ui_gauge",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "",
+        "group": "6d048280.904bec",
+        "order": 5,
+        "width": "4",
+        "height": "3",
+        "gtype": "wave",
+        "title": "Umidade",
+        "label": "%",
+        "format": "{{value}}%",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 340,
+        "y": 260,
+        "wires": [],
+        "info": "Apresentação da umidade medida em São Leopoldo."
+    },
+    {
+        "id": "c87b2d46.81e4e",
+        "type": "ui_gauge",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "",
+        "group": "c89d1384.3b0bf",
+        "order": 4,
+        "width": "4",
+        "height": "3",
+        "gtype": "wave",
+        "title": "Umidade",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": "100",
+        "colors": [
+            "#00b500",
+            "#e6e600",
+            "#ca3838"
+        ],
+        "seg1": "",
+        "seg2": "",
+        "x": 360,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "b38977.280f2688",
+        "type": "ui_text",
+        "z": "3b4bf7ec.3f2d78",
+        "group": "6d048280.904bec",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "Temperatura",
+        "format": "{{msg.payload}}°C",
+        "layout": "row-spread",
+        "x": 630,
+        "y": 180,
+        "wires": [],
+        "info": "Apresentação da temperatura momentânea medida na aplicação de São Leopoldo."
+    },
+    {
+        "id": "e1139b4f.fc62e8",
+        "type": "ui_text",
+        "z": "3b4bf7ec.3f2d78",
+        "group": "6d048280.904bec",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "name": "Atualização",
+        "label": "Atualizado em",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 630,
+        "y": 220,
+        "wires": [],
+        "info": "Hora registrada da recepção de dados da temperatura de são leopoldo."
+    },
+    {
+        "id": "609daa6.e612754",
+        "type": "ui_text",
+        "z": "3b4bf7ec.3f2d78",
+        "group": "c89d1384.3b0bf",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 620,
+        "y": 700,
+        "wires": []
+    },
+    {
+        "id": "1d831bfe.129ab4",
+        "type": "ui_text",
+        "z": "3b4bf7ec.3f2d78",
+        "group": "6d048280.904bec",
+        "order": 4,
+        "width": 0,
+        "height": 0,
+        "name": "",
+        "label": "",
+        "format": "{{msg.payload}}",
+        "layout": "row-spread",
+        "x": 610,
+        "y": 380,
+        "wires": [],
+        "info": "Apresentação da mensagem de chuva da aplicação de São Leopoldo."
+    },
+    {
+        "id": "ebc07f36.aaf98",
+        "type": "ui_button",
+        "z": "3b4bf7ec.3f2d78",
+        "name": "",
+        "group": "f2c9639f.0fadd",
+        "order": 2,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Dados",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "icon": "",
+        "payload": "1",
+        "payloadType": "str",
+        "topic": "",
+        "x": 400,
+        "y": 100,
+        "wires": [
+            [
+                "f3929b84.2c4b08"
+            ]
+        ],
+        "info": "Botão presente no dashboard para requisitar os dados."
+    },
+    {
+        "id": "6123dac3.08e854",
+        "type": "mqtt-broker",
+        "z": "",
+        "name": "eclipse",
+        "broker": "mqtt.eclipse.org",
+        "port": "1883",
+        "tls": "a759b161.53f14",
+        "clientid": "",
+        "usetls": false,
+        "compatmode": false,
+        "keepalive": "60",
+        "cleansession": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "closeTopic": "",
+        "closeQos": "0",
+        "closePayload": "",
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": ""
+    },
+    {
+        "id": "c89d1384.3b0bf",
+        "type": "ui_group",
+        "z": "",
+        "name": "Teutônia",
+        "tab": "326c20c8.fa17c",
+        "order": 2,
+        "disp": true,
+        "width": "8",
+        "collapse": false
+    },
+    {
+        "id": "f2c9639f.0fadd",
+        "type": "ui_group",
+        "z": "",
+        "name": "",
+        "tab": "326c20c8.fa17c",
+        "order": 3,
+        "disp": true,
+        "width": "6",
+        "collapse": false
+    },
+    {
+        "id": "6d048280.904bec",
+        "type": "ui_group",
+        "z": "",
+        "name": "São Leopoldo",
+        "tab": "326c20c8.fa17c",
+        "order": 1,
+        "disp": true,
+        "width": "8",
+        "collapse": false
+    },
+    {
+        "id": "a759b161.53f14",
+        "type": "tls-config",
+        "z": "",
+        "name": "",
+        "cert": "",
+        "key": "",
+        "ca": "",
+        "certname": "mosquitto.org (2).crt",
+        "keyname": "",
+        "caname": "",
+        "servername": "",
+        "verifyservercert": false
+    },
+    {
+        "id": "326c20c8.fa17c",
+        "type": "ui_tab",
+        "z": "",
+        "name": "MeuTrecoNaInternet",
+        "icon": "dashboard",
+        "order": 5,
+        "disabled": false,
+        "hidden": false
     }
 ]
